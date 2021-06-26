@@ -140,5 +140,5 @@ def fetch(userID):
 
 
 def index(request):
-    [arr, [pos, neg]] = fetch('MrBeast') # your name 
+    [arr, [pos, neg]] = fetch('elonmusk') # your name 
     return render(request,'tweets/index.html',{'arr':arr,'pos':pos,'neg':neg,'total':pos+neg})
