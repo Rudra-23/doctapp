@@ -8,5 +8,17 @@
 </head>
 <body>
     <b>Hello twitter</b>
+        {% for tweets,sentiment in arr %}
+        <ul>
+        <li><b>Tweet:</b> {{ tweets }}</li>
+        <li><b>Tweet:</b> {{ sentiment }}</li>
+        </ul>
+        {% endfor %}
+
+    <b> Total score </b>
+    <br>
+    <b>Positive: </b>{{pos}}
+    <b>Negative: </b>{{neg}}
+    <b>Total: </b> {{total}}
 </body>
 </html>

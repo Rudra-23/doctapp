@@ -2,7 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 
 # fetching tweets
-
+'''
 import re
 import tweepy
 import json
@@ -79,13 +79,19 @@ def fetch():
     myStreamListener = MyStreamListener()
     myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
     myStream.filter(languages=["en"], track=ttopic)
-
-
 '''
+
+
 import tweepy
 import re
+import os
 from textblob import TextBlob
 from textblob.sentiments import NaiveBayesAnalyzer
+
+import environ
+env = environ.Env()
+environ.Env.read_env()
+
 
 
 def clean_tweet(tweet):
@@ -98,33 +104,41 @@ def deEmojify(text):
     else:
         return None
 
-def fetch():
-    consumer_key = 'YBG8fQiOBIlN5vT1e59TQMXX6'
-    consumer_key_secret = 'nMO8kCaGFasW8PbqIXpwHA7Kq2snRpZlIxOCgibx18rBTgQT6L'
-
-    access_token = '1135195310429523968-nSIULH9Qd00P1aToYjOlcXXGRTuiKr'
-    access_token_secret = 'syy1Xn9fn4wUbYoiujWZyL6zM8tfQ00UIOXTKvFDha5kh'
-
+def fetch(userID):
+    consumer_key = os.environ.get('consumer_key')
+    consumer_key_secret = os.environ.get('consumer_key_secret')
+    access_token = os.environ.get('access_token')
+    access_token_secret = os.environ.get('access_token_secret')
     auth = tweepy.OAuthHandler(consumer_key, consumer_key_secret)
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth)
 
-    userID = input('UserID : ')
-    tweets = api.user_timeline(
-        screen_name=userID, count=10, include_rts=False, tweet_mode='extended')
+    tweets = api.user_timeline(screen_name=userID,count=10, include_rts=False, tweet_mode='extended')
 
+    arr =[]
+    pos = 0
+    neg = 0
     for tweet in tweets:
-        print('-'*50)
-        print(tweet.full_text)
+        
+        #print(tweet.full_text)
         clean = tweet.full_text
         clean = deEmojify(clean)
         clean = clean_tweet(clean)
         blob_object = TextBlob(clean, analyzer=NaiveBayesAnalyzer())
         analysis = blob_object.sentiment
-        print(analysis)
-        print('-'*50)
-'''
+        # sentiment = TextBlob(clean).sentiment
+        # polarity = sentiment.polarity
+        # subjectivity = sentiment.subjectivity
+        if analysis.classification =='pos':
+            pos+=1
+        else:
+            neg+=1
+        arr.append([tweet.full_text,analysis.classification])
+        
+    
+    return [arr,[pos,neg]]
+
 
 def index(request):
-    fetch()
-    return render(request,'tweets/index.html')
+    [arr, [pos, neg]] = fetch('MrBeast') # your name 
+    return render(request,'tweets/index.html',{'arr':arr,'pos':pos,'neg':neg,'total':pos+neg})
